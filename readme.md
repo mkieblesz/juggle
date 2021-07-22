@@ -27,10 +27,7 @@ TODO: setup 3rd party dev env access/download dev backup script/etc.
 docker-compose up -d db
 source .venv/bin/activate
 python manage.py migrate
-python manage.py shell < juggle/fixtures/users.py
-python manage.py shell < juggle/fixtures/professionals.py
-python manage.py shell < juggle/fixtures/businesses.py
-python manage.py shell < juggle/fixtures/jobs.py
+python manage.py shell < juggle/fixtures/init.py
 python manage.py runserver
 ```
 
