@@ -1,0 +1,19 @@
+django
+django-environ
+django-probes
+django-rest-framework
+psycopg2-binary
+uwsgi
+
+# test
+black
+flake8
+isort
+mypy
+pytest
+pytest-cov
+pytest-django
+
+# dev
+ipdb
+pip-check

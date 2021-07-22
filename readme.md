@@ -10,7 +10,7 @@ Welcome to Juggle 🙌🙌🙌
 
 ## Setup
 
-It is assumed you are running Mac or Ubuntu and have python3.9, latest docker and docker compose installed. Following is recommended setup for development: db in docker, currently developed service on host (in this case it's only api). For demonstration all services in production are run nativiely.
+It is assumed you are running Mac or Ubuntu and have python3.9, latest docker and docker compose installed. Following is recommended setup for development: db in docker, currently developed service on host (in this case it's only api). For demonstration all services in production are running nativiely.
 
 ```bash
 python3.9 -m venv .venv
