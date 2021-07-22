@@ -6,11 +6,11 @@ Welcome to Juggle 🙌🙌🙌
 2. [Development](#development)
 3. [Testing](#testing)
 4. [Styleguide](#styleguide)
-4. [Config Graph](#config-graph)
+5. [Config Graph](#config-graph)
 
 ## Setup
 
-It is assumed you are running Mac or Ubuntu and have python3.9, latest docker and docker compose installed. Following is example setup: db in docker, api on host.
+It is assumed you are running Mac or Ubuntu and have python3.9, latest docker and docker compose installed. Following is recommended setup for development: db in docker, currently developed service on host (in this case it's only api). For demonstration all services in production are run nativiely.
 
 ```bash
 python3.9 -m venv .venv
@@ -63,7 +63,7 @@ TODO
 
 TODO
 
-Choose which elements of configuration layers of a build graph will be supported by build system
+Choose which elements of configuration layers of a build graph will be supported by the build system
 - os: macos/linux/windows/...
 - ide: vscode/sublime/vim/pycharm/emacs/...
 - system components: db/cache/reverse proxy/web server/api/frontend/matching service/payment service/auth service/scheduling service/texting service/generation service/...
