@@ -1,5 +1,3 @@
-import functools
-
 from django.contrib.auth.models import User
 from psycopg2.extras import NumericRange
 

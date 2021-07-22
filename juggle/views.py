@@ -6,7 +6,6 @@ from juggle.models import Job, JobApplication
 from juggle.serializers import EntitySerializer, JobSerializer, JobApplicationSerializer
 
 
-
 # List all entities listed on the website
 # Search for jobs, professionals
 class EntitySearch(APIView):
