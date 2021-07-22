@@ -1,24 +1,28 @@
-from django.contrib.auth.models import Group, User
-from rest_framework import permissions, viewsets
+from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-from juggle.serializers import GroupSerializer, UserSerializer
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-
-    queryset = User.objects.all().order_by("-date_joined")
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+from juggle.models import Job, JobApplication
+from juggle.serializers import EntitySerializer, JobSerializer, JobApplicationSerializer
 
 
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
 
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# List all entities listed on the website
+# Search for jobs, professionals
+class EntitySearch(APIView):
+    def get(self, request, format=None):
+        serializer = EntitySerializer()
+        return Response(serializer.data)
+
+
+class JobViewSet(viewsets.ModelViewSet):
+    queryset = Job.objects.all()
+    serializer_class = JobSerializer
+
+
+# Allow to list all applicants for any job
+# Allow professional to apply for any job
+# Limit to 5 applications per job per day
+class JobApplicationViewSet(viewsets.ModelViewSet):
+    queryset = JobApplication.objects.all()
+    serializer_class = JobApplicationSerializer

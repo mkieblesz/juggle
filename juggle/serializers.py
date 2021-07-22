@@ -1,14 +1,21 @@
-from django.contrib.auth.models import Group, User
 from rest_framework import serializers
+from juggle.models import Job, JobApplication, Professional
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class EntitySerializer(serializers.BaseSerializer):
+    pass
+
+
+class ProfessionalSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = User
-        fields = ["url", "username", "email", "groups"]
+        model = Professional
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
+class JobSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Group
-        fields = ["url", "name"]
+        model = Job
+
+
+class JobApplicationSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = JobApplication

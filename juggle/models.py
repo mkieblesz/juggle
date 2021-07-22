@@ -16,13 +16,13 @@ class LocationChoices(models.TextChoices):
 
 
 class Professional(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # user can have only one professional profile
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=64)
     daily_rate_range = IntegerRangeField()
     availability = ArrayField(
         models.CharField(max_length=32, blank=True, choices=AvailabilityChoices.choices)
     )
-
     location = ArrayField(
         models.CharField(max_length=32, blank=True, choices=LocationChoices.choices)
     )
@@ -37,8 +37,12 @@ class Professional(models.Model):
 
 
 class BusinessAdmin(models.Model):
+    # business admin user can be potentially attached to multiple businesses
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     business = models.ForeignKey("juggle.Business", on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [['user', 'business']]
 
 
 class Business(models.Model):
@@ -63,6 +67,9 @@ class JobApplication(models.Model):
     professional = models.ForeignKey("juggle.Professional", on_delete=models.CASCADE)
     job = models.ForeignKey("juggle.Job", on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['job', 'professional']]
 
 
 class Skill(models.Model):
