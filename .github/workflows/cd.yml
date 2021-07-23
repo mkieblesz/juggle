@@ -59,5 +59,4 @@ jobs:
             python manage.py migrate
             python manage.py collectstatic --noinput
 
-            # bring service back up
             uwsgi --ini uwsgi.ini &
