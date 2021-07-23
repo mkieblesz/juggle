@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 
 from juggle.models import Business, Job, JobApplication, Professional
 from juggle.serializers import JobApplicationSerializer, JobSerializer
-from tests.juggle.test_views import professional
 
 
 class EntitySearch(APIView):
