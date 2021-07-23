@@ -6,11 +6,7 @@ from rest_framework.views import APIView
 
 from juggle.constants import MAX_NUMBER_OF_APPLICATIONS_PER_JOB_PER_DAY
 from juggle.models import Business, Job, JobApplication, Professional
-from juggle.serializers import (
-    JobApplicationCreateSerializer,
-    JobApplicationSerializer,
-    JobSerializer,
-)
+from juggle.serializers import JobApplicationCreateSerializer, JobApplicationSerializer
 
 
 class EntitySearchAPIView(APIView):
@@ -62,13 +58,9 @@ class EntitySearchAPIView(APIView):
         return Response(entities, status=status.HTTP_200_OK)
 
 
-class JobViewSet(viewsets.ModelViewSet):
-    queryset = Job.objects.all()
-    serializer_class = JobSerializer
-
-
 class JobApplicationViewSet(viewsets.ModelViewSet):
     queryset = JobApplication.objects.all()
+    filterset_fields = ('job',)
 
     def get_serializer_class(self):
         if self.action == "create":

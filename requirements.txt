@@ -1,5 +1,6 @@
 django
 django-environ
+django-filter
 django-probes
 django-rest-framework
 psycopg2-binary

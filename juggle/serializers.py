@@ -23,8 +23,6 @@ class JobApplicationSerializer(serializers.ModelSerializer):
 
 
 class JobSerializer(serializers.ModelSerializer):
-    job_application = JobApplicationSerializer(many=True, read_only=True)
-
     class Meta:
         model = Job
         fields = ["title"]

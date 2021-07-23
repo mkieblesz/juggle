@@ -13,7 +13,7 @@ from juggle.models import (
     JobApplication,
     LocationChoices,
     Professional,
-    Skill
+    Skill,
 )
 
 User = get_user_model()
@@ -35,6 +35,22 @@ def _create_professional(name):
     )
 
 
+def _create_job(title):
+    skill, _ = Skill.objects.get_or_create(name="Finance")
+    business, _ = Business.objects.get_or_create(
+        company_name="Example Inc.", website="http://www.example.com"
+    )
+    job = Job.objects.create(
+        title=title,
+        business=business,
+        daily_rate_range=NumericRange(1, 100),
+        availability=[AvailabilityChoices.ONE_OR_TWO_DAYS_PER_WEEK],
+        location=[LocationChoices.ONSITE],
+    )
+    job.skills.add(skill)
+    return job
+
+
 @pytest.fixture
 def professional(db):
     return _create_professional("Professional")
@@ -47,16 +63,7 @@ def business(db):
 
 @pytest.fixture
 def job(db, business):
-    skill = Skill.objects.create(name="Finance")
-    job = Job.objects.create(
-        title="Example job title",
-        business=business,
-        daily_rate_range=NumericRange(1, 100),
-        availability=[AvailabilityChoices.ONE_OR_TWO_DAYS_PER_WEEK],
-        location=[LocationChoices.ONSITE],
-    )
-    job.skills.add(skill)
-    return job
+    return _create_job("Example job title")
 
 
 class TestEntitySearchAPIView:
@@ -105,13 +112,31 @@ class TestJobApplicationViewSet:
 
         assert response.status_code == 200
         assert response.data["count"] == 1
-        assert response.data["next"] is None
-        assert response.data["previous"] is None
         assert dict(response.data["results"][0]["professional"]) == {
             "full_name": professional.full_name
         }
         assert response.data["results"][0]["job"] == job.id
         assert response.data["results"][0]["date"] == "2017-05-21"
+
+    @pytest.mark.freeze_time("2017-05-21")
+    def test_list_filtered_by_job_id(self, client):
+        p1 = _create_professional("1st professional")
+        p2 = _create_professional("2st professional")
+        p3 = _create_professional("3rd professional")
+        j1 = _create_job("1st job")
+        j2 = _create_job("2nd job")
+        JobApplication.objects.create(job=j1, professional=p1)
+        JobApplication.objects.create(job=j1, professional=p2)
+        JobApplication.objects.create(job=j2, professional=p3)
+
+        response = client.get(reverse("job-applications-list"), data={"job": j1.id})
+
+        assert response.status_code == 200
+        assert response.data["count"] == 2
+        assert response.data["results"][0]["professional"]["full_name"] == p1.full_name
+        assert response.data["results"][0]["job"] == j1.id
+        assert response.data["results"][1]["professional"]["full_name"] == p2.full_name
+        assert response.data["results"][1]["job"] == j1.id
 
     @pytest.mark.freeze_time("2017-05-21")
     def test_create(self, client, professional, job):
