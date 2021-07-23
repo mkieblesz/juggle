@@ -37,8 +37,23 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # sudo add-apt-repository -y ppa:deadsnakes/ppa
-            # sudo apt-get install -y python3.9 nginx
             # echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
             # wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-            # apt-get update && apt-get install -y postgresql-13
-            echo 1
+            # apt-get update && apt-get install -y python3.9-dev nginx postgresql-13
+
+            # TODO: do blue/green deployments
+
+            # take the service out - nginx will handle errors
+            pkill uwsgi
+
+            cd /code/
+            git checkout .
+            git pull
+
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+
+            # bring service back up
+            uwsgi --ini uwsgi.ini &

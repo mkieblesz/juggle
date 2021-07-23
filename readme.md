@@ -33,13 +33,14 @@ python manage.py runserver
 
 ## Testing
 
-* verification - checks for correctness of type annotations and styling errors (autoformat mismatch and/or [pep8](https://www.python.org/dev/peps/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds), custom consistency checks)
+* verification - checks for correctness of type annotations, styling errors (autoformat mismatch and/or [pep8](https://www.python.org/dev/peps/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds), custom consistency checks), security patches etc.
 * unit - tests for correctness of a small set of instructions which influence the state in the context of larger procedure/function with calls to other procedures/functions within same codebase or external services being mocked
 * integration - tests multiple units of functionality as a whole with calls to external services being mocked
 * smoke - post-deploy tests with test users (e.g. making requests to 3rd party credit card service with testing user which doesn't make actual transaction) - no mocks
 
 ```bash
 # verification
+# pip-check
 mypy juggle
 black -S -l 100 -t py39 juggle
 isort -rc -c juggle
