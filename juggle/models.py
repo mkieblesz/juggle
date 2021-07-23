@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, IntegerRangeField
 from django.db import models
@@ -66,7 +68,7 @@ class Job(models.Model):
 class JobApplication(models.Model):
     professional = models.ForeignKey("juggle.Professional", on_delete=models.CASCADE)
     job = models.ForeignKey("juggle.Job", on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=datetime.date.today)
 
     class Meta:
         unique_together = [['job', 'professional']]

@@ -7,6 +7,7 @@ Welcome to Juggle 🙌🙌🙌
 3. [Testing](#testing)
 4. [Styleguide](#styleguide)
 5. [Config Graph](#config-graph)
+6. [Todo](#todo)
 
 ## Setup
 
@@ -18,8 +19,6 @@ source .venv/bin/activate
 pip install -U pip setuptools
 pip install -r requirements.txt
 ```
-
-TODO: setup 3rd party dev env access/download dev backup script/etc.
 
 ## Development
 
@@ -41,10 +40,10 @@ python manage.py runserver
 ```bash
 # verification
 # pip-check
-mypy juggle
-black -S -l 100 -t py39 juggle
-isort -rc -c juggle
-flake8 juggle
+mypy juggle tests
+black -S -l 100 -t py39 --exclude migrations juggle tests
+isort -rc -c juggle tests
+flake8 juggle tests
 
 # unit & integration
 pytest --cov
@@ -55,11 +54,7 @@ pytest --cov
 
 ## Styleguide
 
-TODO
-
 ## Config Graph
-
-TODO
 
 Choose which elements of configuration layers of a build graph will be supported by the build system
 - os: macos/linux/windows/...
@@ -70,3 +65,54 @@ Choose which elements of configuration layers of a build graph will be supported
 - deployment orchestration: manual/scripts/docker-compose/terraform/kubernetes/cloudformation/...
 - hardware provider: local/gcp/aws/scaleway/...
 - ...
+
+## TODO
+
+* TODO: search should be done with custom query or better materialized union view in postgres or even better separate search engine
+* TODO: add pagination to search view
+* TODO: add to readme setup 3rd party dev env access/download dev backup script/etc.
+* TODO: use django-any or similar
+* TODO: add styleguide
+* TODO: build and store release artifacts on github and just rsync to machine
+* TODO: do blue/green deployments
+* TODO: exit with non 0 on failure in actions
+* TODO: make actions more verbose (make more steps)
+* TODO: create build system able to generate configuration files
+* TODO: make search version with union work using python orm - current there is probably a bug
+    ```python
+        professional_qs = (
+            Professional.objects.annotate(type=Value("professional"))
+            .annotate(full_name=Concat("user__first_name", Value(" "), "user__last_name"))
+            .filter(user__last_name__icontains=query)
+            .values("type", "full_name")
+        )
+
+        business_qs = (
+            Business.objects.annotate(type=Value("business"))
+            .filter(company_name__icontains=query)
+            .values("type", "company_name")
+        )
+
+        job_qs = (
+            Job.objects.annotate(type=Value("job"))
+            .filter(title__icontains=query)
+            .values("type", "title")
+        )
+
+        entities = professional_qs.union(business_qs, job_qs)
+    ```
+    Generated sql for this query looks very veird:
+
+    ```sql
+        (SELECT professional AS "type", CONCAT("auth_user"."first_name", CONCAT( , "auth_user"."last_name")) AS "full_name" FROM "juggle_professional" INNER JOIN "auth_user" ON ("juggle_professional"."user_id" = "auth_user"."id")) UNION (SELECT "juggle_business"."company_name", business AS "type" FROM "juggle_business") UNION (SELECT "juggle_job"."title", job AS "type" FROM "juggle_job")
+    ```
+
+    and result even weirder:
+
+    ```json
+        [
+            { "type": "Example Inc.", "full_name": "business" },
+            { "type": "professional", "full_name": "Mr Professional" },
+            { "type": "Example job title", "full_name": "job" }
+        ]
+    ```

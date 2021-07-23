@@ -25,8 +25,6 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      # - uses: actions/checkout@v2
-      # TODO build and store release artifacts on github and just rsync to machine
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
@@ -38,9 +36,6 @@ jobs:
             # echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
             # wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
             # apt-get update && apt-get install -y python3.9-dev nginx postgresql-13
-
-            # TODO: do blue/green deployments
-            # TODO: exit with non 0 on failure
 
             pkill -9 uwsgi
 

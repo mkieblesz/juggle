@@ -9,7 +9,7 @@ from juggle.models import (
     JobApplication,
     LocationChoices,
     Professional,
-    Skill
+    Skill,
 )
 
 User = get_user_model()

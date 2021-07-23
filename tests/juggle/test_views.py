@@ -1,22 +1,19 @@
-# TODO: use django-any or similar
-from collections import OrderedDict
-from datetime import datetime
+from datetime import date
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from psycopg2.extras import NumericRange
-from rest_framework.test import APIClient
+from rest_framework import status
 
 from juggle.models import (
     AvailabilityChoices,
     Business,
-    BusinessAdmin,
     Job,
     JobApplication,
     LocationChoices,
     Professional,
-    Skill,
+    Skill
 )
 
 User = get_user_model()
@@ -45,9 +42,7 @@ def professional(db):
 
 @pytest.fixture
 def business(db):
-    return Business.objects.create(
-        company_name="Example Inc.", website="http://www.example.com"
-    )
+    return Business.objects.create(company_name="Example Inc.", website="http://www.example.com")
 
 
 @pytest.fixture
@@ -64,72 +59,101 @@ def job(db, business):
     return job
 
 
-def test_list_all_entities_listed_on_the_website(client, professional, business):
-    assert client.get(reverse("entity_search")).data == [
-        {"type": "professional", "full_name": "Mr Professional"},
-        {"type": "business", "company_name": "Example Inc."},
-    ]
-
-
-def test_search_for_entities(client, professional, business):
-    assert client.get(reverse("entity_search"), data={"query": "Example"}).data == [
-        {"type": "professional", "full_name": "Mr Professional"},
-        {"type": "business", "company_name": "Example Inc."},
-    ]
-    assert client.get(reverse("entity_search"), data={"query": "a"}).data == [
-        {"type": "professional", "full_name": "Mr Professional"},
-        {"type": "business", "company_name": "Example Inc."},
-    ]
-
-
-@pytest.mark.freeze_time("2017-05-21")
-def test_allow_to_list_all_applicants_for_any_job(client, professional, job):
-    JobApplication.objects.create(job=job, professional=professional)
-
-    response = client.get(reverse("job-applications-list"))
-
-    assert response.status_code == 200
-    assert response.data["count"] == 1
-    assert response.data["next"] == None
-    assert response.data["previous"] == None
-    assert dict(response.data["results"][0]["professional"]) == {
-        "full_name": "Mr Professional"
-    }
-    assert response.data["results"][0]["job"] == 1
-    assert response.data["results"][0]["date"] == "2017-05-21"
-
-
-@pytest.mark.freeze_time("2017-05-21")
-def test_allow_professional_to_apply_for_any_job(client, professional, job):
-    response = client.post(
-        reverse("job-applications-list"),
-        {"job": job.id, "professional": professional.id, "date": "2017-05-21"},
+class TestEntitySearchAPIView:
+    @pytest.mark.parametrize(
+        "query,expected",
+        [
+            (
+                "",
+                [
+                    {"type": "professional", "full_name": "Mr Professional"},
+                    {"type": "business", "company_name": "Example Inc."},
+                    {"type": "job", "title": "Example job title"},
+                ],
+            ),
+            (
+                "Example",
+                [
+                    {"type": "business", "company_name": "Example Inc."},
+                    {"type": "job", "title": "Example job title"},
+                ],
+            ),
+            (
+                "a",
+                [
+                    {"type": "professional", "full_name": "Mr Professional"},
+                    {"type": "business", "company_name": "Example Inc."},
+                    {"type": "job", "title": "Example job title"},
+                ],
+            ),
+            (
+                "query_which_doesnt_return_anything",
+                [],
+            ),
+        ],
     )
-    print(response.status_code)
-    print(response.data)
+    def test_view(self, query, expected, client, professional, business, job):
+        assert client.get(reverse("entity_search"), data={"query": query}).data == expected
 
 
-@pytest.mark.freeze_time("2017-05-21")
-def test_limit_to_5_applications_per_job_per_day(client, professional, job):
-    for i in range(0, 5):
-        p = _create_professional(f"{i} professional")
-        JobApplication.objects.create(job=job, professional=p)
+class TestJobApplicationViewSet:
+    @pytest.mark.freeze_time("2017-05-21")
+    def test_list(self, client, professional, job):
+        JobApplication.objects.create(job=job, professional=professional)
 
-    assert JobApplication.objects.filter(job=job).count() == 5
+        response = client.get(reverse("job-applications-list"))
 
-    response = client.post(
-        reverse("job-applications-list"),
-        {"job": job.id, "professional": professional.id, "date": "2017-05-21"},
-    )
+        assert response.status_code == 200
+        assert response.data["count"] == 1
+        assert response.data["next"] is None
+        assert response.data["previous"] is None
+        assert dict(response.data["results"][0]["professional"]) == {
+            "full_name": professional.full_name
+        }
+        assert response.data["results"][0]["job"] == job.id
+        assert response.data["results"][0]["date"] == "2017-05-21"
 
-    assert response.status_code == 400
-    assert JobApplication.objects.filter(job=job).count() == 5
+    @pytest.mark.freeze_time("2017-05-21")
+    def test_create(self, client, professional, job):
+        response = client.post(
+            reverse("job-applications-list"),
+            {"job": job.id, "professional": professional.id},
+        )
 
-    date = datetime.strptime("25-05-2010", "%d-%m-%Y").date()
-    response = client.post(
-        reverse("job-applications-list"),
-        {"job": job.id, "professional": professional.id, "date": "25-05-2010"},
-    )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert JobApplication.objects.count() == 1
 
-    assert response.status_code == 200
-    assert JobApplication.objects.filter(job=job).count() == 6
+    @pytest.mark.freeze_time("2017-05-21")
+    def test_create_limit_for_the_day_exceeded(self, client, professional, job):
+        for i in range(0, 5):
+            p = _create_professional(f"{i} professional")
+            JobApplication.objects.create(job=job, professional=p)
+
+        assert JobApplication.objects.filter(job=job).count() == 5
+
+        response = client.post(
+            reverse("job-applications-list"),
+            {"job": job.id, "professional": professional.id},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"message": "You can't apply for this job today. Try tomorrow"}
+
+        assert JobApplication.objects.filter(job=job).count() == 5
+
+    @pytest.mark.freeze_time("2017-05-22")
+    def test_create_limit_for_today_didnt_exceed(self, client, professional, job):
+        yesterday = date(2017, 5, 21)
+        for i in range(0, 5):
+            p = _create_professional(f"{i} professional")
+            JobApplication.objects.create(job=job, professional=p, date=yesterday)
+
+        assert JobApplication.objects.filter(job=job).count() == 5
+
+        response = client.post(
+            reverse("job-applications-list"),
+            {"job": job.id, "professional": professional.id},
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert JobApplication.objects.filter(job=job).count() == 6

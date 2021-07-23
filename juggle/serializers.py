@@ -8,8 +8,14 @@ class ProfessionalSerializer(serializers.ModelSerializer):
         fields = ["full_name"]
 
 
+class JobApplicationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobApplication
+        fields = ["professional", "job", "date"]
+
+
 class JobApplicationSerializer(serializers.ModelSerializer):
-    # professional = ProfessionalSerializer()
+    professional = ProfessionalSerializer()
 
     class Meta:
         model = JobApplication
