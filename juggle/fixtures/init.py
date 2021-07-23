@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from psycopg2.extras import NumericRange
 
 from juggle.models import (
@@ -11,6 +11,8 @@ from juggle.models import (
     Professional,
     Skill
 )
+
+User = get_user_model()
 
 if not User.objects.filter(username="admin").exists():
     User.objects.create_superuser(
@@ -25,6 +27,7 @@ user_1, _ = User.objects.get_or_create(
     username="professional",
     first_name="Mr",
     last_name="Professional",
+    password="test",
     email="john_smith@example.com",
 )
 
@@ -32,6 +35,7 @@ user_2, _ = User.objects.get_or_create(
     username="business_admin",
     first_name="Mr",
     last_name="Business Admin",
+    password="test",
 )
 
 

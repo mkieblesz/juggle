@@ -3,15 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from juggle.models import Job, JobApplication
-from juggle.serializers import EntitySerializer, JobSerializer, JobApplicationSerializer
+from juggle.serializers import JobSerializer, JobApplicationSerializer
 
 
-# List all entities listed on the website
-# Search for jobs, professionals
 class EntitySearch(APIView):
     def get(self, request, format=None):
-        serializer = EntitySerializer()
-        return Response(serializer.data)
+        return Response([])
 
 
 class JobViewSet(viewsets.ModelViewSet):
@@ -19,9 +16,6 @@ class JobViewSet(viewsets.ModelViewSet):
     serializer_class = JobSerializer
 
 
-# Allow to list all applicants for any job
-# Allow professional to apply for any job
-# Limit to 5 applications per job per day
 class JobApplicationViewSet(viewsets.ModelViewSet):
     queryset = JobApplication.objects.all()
     serializer_class = JobApplicationSerializer

@@ -6,10 +6,11 @@ from rest_framework import routers
 from juggle import views
 
 router = routers.DefaultRouter()
-router.register(r"jobs", views.JobViewSet)
-router.register(r"job-applications", views.JobApplicationViewSet)
+router.register(r"jobs", views.JobViewSet, basename="jobs")
+router.register(r"job-applications", views.JobApplicationViewSet, basename="job-applications")
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path("api/search", views.EntitySearch.as_view(), name='entity_search'),
+    path("api/", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
