@@ -76,6 +76,7 @@ Choose which elements of configuration layers of a build graph will be supported
 * TODO: use django-any or similar
 * TODO: add styleguide
 * TODO: build and store release artifacts on github and just rsync to machine
+* TODO: profile code, optimize queries where necessary
 * TODO: do blue/green deployments
 * TODO: exit with non 0 on failure in actions
 * TODO: make actions more verbose (make more steps)
