@@ -9,7 +9,7 @@ class ProfessionalSerializer(serializers.ModelSerializer):
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
-    professional = ProfessionalSerializer(read_only=True)
+    professional = ProfessionalSerializer()
 
     class Meta:
         model = JobApplication
@@ -22,3 +22,7 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ["title"]
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+
