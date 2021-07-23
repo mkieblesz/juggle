@@ -81,7 +81,7 @@ Choose which elements of configuration layers of a build graph will be supported
 * TODO: exit with non 0 on failure in actions
 * TODO: make actions more verbose (make more steps)
 * TODO: create build system able to generate configuration files
-* TODO: make search version with union work using python orm - current there is probably a bug
+* TODO: make search version with union work using python orm - current there is probably a bug, probably described here: https://stackoverflow.com/a/60704272
     ```python
         professional_qs = (
             Professional.objects.annotate(type=Value("professional"))
@@ -117,5 +117,32 @@ Choose which elements of configuration layers of a build graph will be supported
             { "type": "Example Inc.", "full_name": "business" },
             { "type": "professional", "full_name": "Mr Professional" },
             { "type": "Example job title", "full_name": "job" }
+        ]
+    ```
+
+    following:
+
+    ```python
+        professional_qs = (
+            Professional.objects.annotate(
+                full_name=Concat("user__first_name", Value(" "), "user__last_name")
+            )
+            .filter(user__last_name__icontains=query)
+            .values("full_name", type=Value("professional"))
+        )
+        business_qs = Business.objects.filter(company_name__icontains=query).values(
+            "company_name", type=Value("business")
+        )
+        job_qs = Job.objects.filter(title__icontains=query).values("title", type=Value("job"))
+
+        print(list(professional_qs.union(business_qs, job_qs)))
+    ```
+
+    gives:
+    ```json
+        [
+            { "full_name": "Example Inc.", "type": "business" },
+            { "full_name": "Example job title", "type": "job" },
+            { "full_name": "Mr Professional", "type": "professional" }
         ]
     ```
