@@ -1,10 +1,12 @@
 # TODO: use django-any or similar
+from datetime import datetime
+from collections import OrderedDict
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from psycopg2.extras import NumericRange
 from rest_framework.test import APIClient
-from datetime import datetime
+
 from juggle.models import (
     AvailabilityChoices,
     Business,
@@ -51,7 +53,7 @@ def business(db):
 
 
 @pytest.fixture
-def job(db):
+def job(db, business):
     skill = Skill.objects.create(name="Finance")
     job = Job.objects.create(
         title="Example job title",
@@ -82,11 +84,21 @@ def test_search_for_entities(client, professional, business):
     ]
 
 
-def test_allow_to_list_all_applicants_for_any_job(client, professional, business, job):
-    job_application = JobApplication.objects.create(job=job, professional=professional)
+def test_allow_to_list_all_applicants_for_any_job(client, professional, job):
+    JobApplication.objects.create(job=job, professional=professional)
 
-    assert client.get(reverse("job-applications")).data == [
-        {"type": "business", "company_name": "Example Inc."},
+    response = client.get(reverse("job-applications-list"))
+
+    assert response.status_code == 200
+    assert response.data["count"] == 1
+    assert response.data["next"] == None
+    assert response.data["previous"] == None
+    assert response.data["results"] == [
+        [
+            ("professional", [("full_name", "Mr Professional")]),
+            ("job", 1),
+            ("date", "2021-07-23"),
+        ]
     ]
 
 
@@ -101,14 +113,14 @@ def test_limit_to_5_applications_per_job_per_day(client, business, job):
         p = _create_professional(f"{i} professional")
         JobApplication.objects.create(job=job, professional=p, date=date)
 
-    assert JobApplication.filter(job=job).count() == 5
+    assert JobApplication.objects.filter(job=job).count() == 5
 
     response = client.post(
         reverse("job-applications"), {"job": job, "professional": p, "date": date}
     )
 
     assert response.status_code == 400
-    assert JobApplication.filter(job=job).count() == 5
+    assert JobApplication.objects.filter(job=job).count() == 5
 
     date = datetime.strptime("25-05-2010", "%d-%m-%Y").date()
     response = client.post(
@@ -116,4 +128,4 @@ def test_limit_to_5_applications_per_job_per_day(client, business, job):
     )
 
     assert response.status_code == 200
-    assert JobApplication.filter(job=job).count() == 6
+    assert JobApplication.objects.filter(job=job).count() == 6
