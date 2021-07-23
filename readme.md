@@ -71,6 +71,7 @@ Choose which elements of configuration layers of a build graph will be supported
 * TODO: search should be done with custom query or better materialized union view in postgres or even better separate search engine
 * TODO: restrict permissions for api endpoints
 * TODO: add pagination to search view
+* TODO: add typechecks
 * TODO: add to readme setup 3rd party dev env access/download dev backup script/etc.
 * TODO: use django-any or similar
 * TODO: add styleguide
