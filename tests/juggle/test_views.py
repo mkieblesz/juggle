@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -150,35 +151,39 @@ class TestJobApplicationViewSet:
 
     @pytest.mark.freeze_time("2017-05-21")
     def test_create_limit_for_the_day_exceeded(self, client, professional, job):
-        for i in range(0, 5):
-            p = _create_professional(f"{i} professional")
-            JobApplication.objects.create(job=job, professional=p)
+        p1 = _create_professional(f"1 professional")
+        p2 = _create_professional(f"2 professional")
+        p3 = _create_professional(f"3 professional")
+        JobApplication.objects.create(job=job, professional=p1)
+        JobApplication.objects.create(job=job, professional=p2)
+        JobApplication.objects.create(job=job, professional=p3)
 
-        assert JobApplication.objects.filter(job=job).count() == 5
-
-        response = client.post(
-            reverse("job-applications-list"),
-            {"job": job.id, "professional": professional.id},
-        )
+        with patch("juggle.views.MAX_NUMBER_OF_APPLICATIONS_PER_JOB_PER_DAY", 3):
+            response = client.post(
+                reverse("job-applications-list"),
+                {"job": job.id, "professional": professional.id},
+            )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == {"message": "You can't apply for this job today. Try tomorrow"}
 
-        assert JobApplication.objects.filter(job=job).count() == 5
+        assert JobApplication.objects.filter(job=job).count() == 3
 
     @pytest.mark.freeze_time("2017-05-22")
     def test_create_limit_for_today_didnt_exceed(self, client, professional, job):
         yesterday = date(2017, 5, 21)
-        for i in range(0, 5):
-            p = _create_professional(f"{i} professional")
-            JobApplication.objects.create(job=job, professional=p, date=yesterday)
+        p1 = _create_professional(f"1 professional")
+        p2 = _create_professional(f"2 professional")
+        p3 = _create_professional(f"3 professional")
+        JobApplication.objects.create(job=job, professional=p1, date=yesterday)
+        JobApplication.objects.create(job=job, professional=p2, date=yesterday)
+        JobApplication.objects.create(job=job, professional=p3, date=yesterday)
 
-        assert JobApplication.objects.filter(job=job).count() == 5
-
-        response = client.post(
-            reverse("job-applications-list"),
-            {"job": job.id, "professional": professional.id},
-        )
+        with patch("juggle.views.MAX_NUMBER_OF_APPLICATIONS_PER_JOB_PER_DAY", 3):
+            response = client.post(
+                reverse("job-applications-list"),
+                {"job": job.id, "professional": professional.id},
+            )
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert JobApplication.objects.filter(job=job).count() == 6
+        assert JobApplication.objects.filter(job=job).count() == 4
