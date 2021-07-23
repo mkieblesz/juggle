@@ -12,7 +12,7 @@ SECRET_KEY = env.str(
     "SECRET_KEY",
     default="django-insecure-e-5!y!2*ksu^f^(q4w5hh!b%b!8f3vlrc6h2^sq@ozz)dl8z%p",
 )
-DEBUG = env.bool("API_DEBUG", default=True)
+DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS: List[str] = env.list("ALLOWED_HOSTS", default=["*"])
 
