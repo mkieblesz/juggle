@@ -42,6 +42,7 @@ jobs:
             # apt-get update && apt-get install -y python3.9-dev nginx postgresql-13
 
             # TODO: do blue/green deployments
+            # TODO: exit with non 0 on failure
 
             # take the service out - nginx will handle errors
             pkill uwsgi
