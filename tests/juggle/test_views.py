@@ -1,6 +1,7 @@
 # TODO: use django-any or similar
 from datetime import datetime
 from collections import OrderedDict
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -19,9 +20,6 @@ from juggle.models import (
 )
 
 User = get_user_model()
-
-
-# TODO: add more tests
 
 
 def _create_professional(name):
@@ -84,6 +82,7 @@ def test_search_for_entities(client, professional, business):
     ]
 
 
+@pytest.mark.freeze_time("2017-05-21")
 def test_allow_to_list_all_applicants_for_any_job(client, professional, job):
     JobApplication.objects.create(job=job, professional=professional)
 
@@ -93,30 +92,28 @@ def test_allow_to_list_all_applicants_for_any_job(client, professional, job):
     assert response.data["count"] == 1
     assert response.data["next"] == None
     assert response.data["previous"] == None
-    assert response.data["results"] == [
-        [
-            ("professional", [("full_name", "Mr Professional")]),
-            ("job", 1),
-            ("date", "2021-07-23"),
-        ]
-    ]
+    assert dict(response.data["results"][0]["professional"]) == {
+        "full_name": "Mr Professional"
+    }
+    assert response.data["results"][0]["job"] == 1
+    assert response.data["results"][0]["date"] == "2017-05-21"
 
 
 def test_allow_professional_to_apply_for_any_job(client, professional, business, job):
-    assert client.post(reverse("job-applications")).data == []
+    response = client.post(reverse("job-applications"))
 
 
+@pytest.mark.freeze_time("2017-05-21")
 def test_limit_to_5_applications_per_job_per_day(client, business, job):
-    date = datetime.strptime("24-05-2010", "%d-%m-%Y").date()
-
     for i in range(0, 5):
         p = _create_professional(f"{i} professional")
-        JobApplication.objects.create(job=job, professional=p, date=date)
+        JobApplication.objects.create(job=job, professional=p)
 
     assert JobApplication.objects.filter(job=job).count() == 5
 
     response = client.post(
-        reverse("job-applications"), {"job": job, "professional": p, "date": date}
+        reverse("job-applications"),
+        {"job": job, "professional": p, "date": "2017-05-21"},
     )
 
     assert response.status_code == 400
@@ -124,7 +121,8 @@ def test_limit_to_5_applications_per_job_per_day(client, business, job):
 
     date = datetime.strptime("25-05-2010", "%d-%m-%Y").date()
     response = client.post(
-        reverse("job-applications"), {"job": job, "professional": p, "date": date}
+        reverse("job-applications"),
+        {"job": job, "professional": p, "date": "25-05-2010"},
     )
 
     assert response.status_code == 200
