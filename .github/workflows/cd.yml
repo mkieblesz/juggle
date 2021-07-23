@@ -17,9 +17,9 @@ jobs:
       run: docker-compose up -d --build
     - name: Run Tests
       run: |
-        docker-compose exec api flake8 juggle
-        docker-compose exec api mypy juggle
-        docker-compose exec api pytest --cov
+        docker-compose exec -T api flake8 juggle
+        docker-compose exec -T api mypy juggle
+        docker-compose exec -T api pytest --cov
 
   deploy:
     needs: test
