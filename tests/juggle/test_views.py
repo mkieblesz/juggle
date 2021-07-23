@@ -110,7 +110,7 @@ def test_allow_professional_to_apply_for_any_job(client, professional, job):
 
 
 @pytest.mark.freeze_time("2017-05-21")
-def _test_limit_to_5_applications_per_job_per_day(client, professional, job):
+def test_limit_to_5_applications_per_job_per_day(client, professional, job):
     for i in range(0, 5):
         p = _create_professional(f"{i} professional")
         JobApplication.objects.create(job=job, professional=p)
