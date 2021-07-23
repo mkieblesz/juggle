@@ -100,11 +100,13 @@ def test_allow_to_list_all_applicants_for_any_job(client, professional, job):
 
 
 @pytest.mark.freeze_time("2017-05-21")
-def _test_allow_professional_to_apply_for_any_job(client, professional, job):
+def test_allow_professional_to_apply_for_any_job(client, professional, job):
     response = client.post(
         reverse("job-applications-list"),
         {"job": job.id, "professional": professional.id, "date": "2017-05-21"},
     )
+    print(response.status_code)
+    print(response.data)
 
 
 @pytest.mark.freeze_time("2017-05-21")
@@ -119,7 +121,6 @@ def _test_limit_to_5_applications_per_job_per_day(client, professional, job):
         reverse("job-applications-list"),
         {"job": job.id, "professional": professional.id, "date": "2017-05-21"},
     )
-    print(response.data)
 
     assert response.status_code == 400
     assert JobApplication.objects.filter(job=job).count() == 5

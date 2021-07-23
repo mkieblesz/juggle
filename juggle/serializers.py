@@ -22,6 +22,3 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ["title"]
-
-    def perform_create(self, serializer):
-        super().perform_create(serializer)
