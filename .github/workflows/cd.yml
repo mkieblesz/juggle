@@ -44,9 +44,6 @@ jobs:
             # TODO: do blue/green deployments
             # TODO: exit with non 0 on failure
 
-            # take the service out - nginx will handle errors
-            pkill uwsgi
-
             cd /code/
             git checkout .
             git pull
@@ -59,6 +56,3 @@ jobs:
             pip install -r requirements.txt
             python manage.py migrate
             python manage.py collectstatic --noinput
-
-            # bring service back up
-            uwsgi --ini uwsgi.ini &
