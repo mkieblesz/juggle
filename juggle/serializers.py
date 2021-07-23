@@ -9,7 +9,7 @@ class ProfessionalSerializer(serializers.ModelSerializer):
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
-    professional = ProfessionalSerializer()
+    # professional = ProfessionalSerializer()
 
     class Meta:
         model = JobApplication

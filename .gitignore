@@ -1,9 +1,10 @@
-.coverage
+.vscode/
+
+.venv/
 
 __pycache__/
 .mypy_cache/
 .pytest_cache/
-
-.venv/
+.coverage
 
 static/
