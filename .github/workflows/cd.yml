@@ -44,7 +44,7 @@ jobs:
             # TODO: do blue/green deployments
             # TODO: exit with non 0 on failure
 
-            kill -9 uwsgi
+            pkill -9 uwsgi
 
             cd /code/
             git checkout .
