@@ -37,19 +37,9 @@ jobs:
             # wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
             # apt-get update && apt-get install -y python3.9-dev nginx postgresql-13
 
-            pkill -9 uwsgi
-
             cd /code/
             git checkout .
             git pull
 
-            export SECRET_KEY="${{ secrets.SECRET_KEY }}"
-            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
-            export DEBUG=False
-
-            source .venv/bin/activate
-            pip install -r requirements.txt
-            python manage.py migrate
-            python manage.py collectstatic --noinput
-
-            uwsgi --ini uwsgi.ini &
+            docker-compose build api
+            docker-compose restart api

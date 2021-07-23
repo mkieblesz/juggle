@@ -32,6 +32,7 @@ services:
       - '80:80'
     volumes:
       - './nginx.juggle.conf:/etc/nginx/conf.d/default.conf'
+      - './static:/code/static/'
     restart: always
 
 volumes:
