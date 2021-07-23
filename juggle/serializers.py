@@ -25,4 +25,3 @@ class JobSerializer(serializers.ModelSerializer):
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
-

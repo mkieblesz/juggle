@@ -100,7 +100,7 @@ def test_allow_to_list_all_applicants_for_any_job(client, professional, job):
 
 
 @pytest.mark.freeze_time("2017-05-21")
-def test_allow_professional_to_apply_for_any_job(client, professional, job):
+def _test_allow_professional_to_apply_for_any_job(client, professional, job):
     response = client.post(
         reverse("job-applications-list"),
         {"job": job.id, "professional": professional.id, "date": "2017-05-21"},
@@ -108,7 +108,7 @@ def test_allow_professional_to_apply_for_any_job(client, professional, job):
 
 
 @pytest.mark.freeze_time("2017-05-21")
-def test_limit_to_5_applications_per_job_per_day(client, job):
+def _test_limit_to_5_applications_per_job_per_day(client, professional, job):
     for i in range(0, 5):
         p = _create_professional(f"{i} professional")
         JobApplication.objects.create(job=job, professional=p)
@@ -117,8 +117,9 @@ def test_limit_to_5_applications_per_job_per_day(client, job):
 
     response = client.post(
         reverse("job-applications-list"),
-        {"job": job.id, "professional": p.id, "date": "2017-05-21"},
+        {"job": job.id, "professional": professional.id, "date": "2017-05-21"},
     )
+    print(response.data)
 
     assert response.status_code == 400
     assert JobApplication.objects.filter(job=job).count() == 5
@@ -126,7 +127,7 @@ def test_limit_to_5_applications_per_job_per_day(client, job):
     date = datetime.strptime("25-05-2010", "%d-%m-%Y").date()
     response = client.post(
         reverse("job-applications-list"),
-        {"job": job.id, "professional_id": p.id, "date": "25-05-2010"},
+        {"job": job.id, "professional": professional.id, "date": "25-05-2010"},
     )
 
     assert response.status_code == 200
